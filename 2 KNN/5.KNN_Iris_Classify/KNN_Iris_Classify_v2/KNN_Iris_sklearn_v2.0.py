@@ -13,6 +13,7 @@ from sklearn.metrics import accuracy_score
 
 #第一步：读取数据集
 iris = datasets.load_iris()# 获取所需数据集
+
 #load_iris返回的结果有如下属性：
 #feature_names - 分别为：sepal length (cm)， sepal width (cm)， petal length (cm)和 petal width (cm)
 #data - 每行的数据，一共四列，每一列映射为feature_names中对应的值
@@ -47,6 +48,7 @@ knn.fit(X_train, Y_train)
 #第四步：预测数据
 #predictedLabel = knn.predict([[0.1, 0.2, 0.3, 0.4]])
 predictedLabel = knn.predict(X_test)
+
 # 获得预测准确率
 # http://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html
 print(accuracy_score(Y_test, predictedLabel))
