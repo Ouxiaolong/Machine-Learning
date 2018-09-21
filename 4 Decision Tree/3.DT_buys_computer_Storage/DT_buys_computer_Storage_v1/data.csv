@@ -1,0 +1,16 @@
+RID,age,student,credit_rating,income,class_buys_computer
+1,0,0,0,2,no
+2,0,0,1,2,no
+3,1,0,0,2,yes
+4,2,0,0,1,yes
+5,2,1,0,0,yes
+6,2,1,1,0,no
+7,1,1,1,0,yes
+8,0,0,0,1,no
+9,0,1,0,0,yes
+10,2,1,0,1,yes
+11,0,1,1,1,yes
+12,1,0,1,1,yes
+13,1,1,0,2,yes
+14,2,0,1,1,no
+,
