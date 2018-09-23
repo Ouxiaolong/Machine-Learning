@@ -8,48 +8,74 @@ Please note, this code is only for python 3+. If you are using python 2+, please
 """
 # -*- coding: utf-8 -*-
 import pandas as pd
-from math import log
 import operator
 
 """
-函数说明:计算给定数据集的经验熵(香农熵)
+函数说明:计算基尼指数
+Parameters:
+	dataSet - 数据集
+Returns:
+	计算结果
+
+"""
+def calcGini(dataSet):
+    
+    numEntries = len(dataSet)
+    labelCounts = {}
+    for featVec in dataSet: # 遍历每个实例，统计标签的频数
+        currentLabel = featVec[-1]
+        if currentLabel not in labelCounts.keys(): 
+            labelCounts[currentLabel] = 0
+        labelCounts[currentLabel] += 1
+    Gini = 1.0
+    for key in labelCounts:
+        prob = float(labelCounts[key]) / numEntries
+        Gini -= prob * prob # 以2为底的对数
+    return Gini
+
+"""
+函数说明:计算给定特征下的基尼指数
+Parameters:
+	dataSet - 数据集
+    feature - 特征维度
+    value - 该特征变量所取的值
+Returns:
+	计算结果
+
+"""
+def calcGiniWithFeat(dataSet, feature, value):
+
+    D0 = []; D1 = []
+    # 根据特征划分数据
+    for featVec in dataSet:
+        if featVec[feature] == value:
+            D0.append(featVec)
+        else:
+            D1.append(featVec)
+    Gini = len(D0) / len(dataSet) * calcGini(D0) + len(D1) / len(dataSet) * calcGini(D1)
+    return Gini
+
+"""
+函数说明:选择最优特征
 
 Parameters:
-    dataSet - 数据集
+	dataSet - 数据集
 Returns:
-    shannonEnt - 经验熵(香农熵)
+	bestFeat - 最优特征
+
 """
-def calcShannonEnt(dataSet):
-    #返回数据集的行数
-    numEntires = len(dataSet)                        
-    
-    #保存每个标签(Label)出现次数的字典
-    labelCounts = {}                                
-    
-    #对每组特征向量进行统计
-    for featVec in dataSet:                            
-        #提取标签(Label)信息
-        currentLabel = featVec[-1]                    
-        
-        #如果标签(Label)没有放入统计次数的字典,添加进去
-        if currentLabel not in labelCounts.keys():    
-            
-            labelCounts[currentLabel] = 0
-        labelCounts[currentLabel] += 1   #Label计数            
-        
-    shannonEnt = 0.0   #经验熵(香农熵)                             
-    
-    #计算香农熵
-    for key in labelCounts:                            
-        
-        #选择该标签(Label)的概率
-        prob = float(labelCounts[key]) / numEntires    
-        
-        #利用公式计算
-        shannonEnt -= prob * log(prob, 2)            
-        
-    #返回经验熵(香农熵)
-    return shannonEnt                                						
+def chooseBestSplit(dataSet):
+    numFeatures = len(dataSet[0])-1
+    bestGini = 0; bestFeat = 0;newGini = 0
+    for i in range(numFeatures):
+        featList = [example[i] for example in dataSet]
+        uniqueVals = set(featList)
+        for splitVal in uniqueVals:
+            newGini = calcGiniWithFeat(dataSet, i, splitVal)
+            if newGini < bestGini:
+                bestFeat = i
+                bestGini = newGini
+    return bestFeat
 
 """
 函数说明:按照给定特征划分数据集
@@ -75,71 +101,7 @@ def splitDataSet(dataSet, axis, value):
             retDataSet.append(reducedFeatVec)
 	
     #返回划分后的数据集
-    return retDataSet		  							
-
-"""
-函数说明:计算X_i给定的条件下，Y的条件熵
-
-Parameters:
-    dataSet - 数据集
-    i - 维度i
-    uniqueVals - 数据集特征集合
-Returns:
-    newEntropy - 条件熵
-"""
-def calcConditionalEntropy(dataSet, i, uniqueVals):
-    
-    #经验条件熵
-    newEntropy = 0.0
-    for value in uniqueVals:
-        subDataSet = splitDataSet(dataSet, i, value)
-        prob = len(subDataSet) / float(len(dataSet))  # 极大似然估计概率
-        newEntropy += prob * calcShannonEnt(subDataSet)  # 条件熵的计算
-    return newEntropy
-
-"""
-函数说明:计算信息增益
-
-Parameters:
-    dataSet - 数据集
-Returns:
-    bestIndex - 最好的特征索引
-    bestInfoGain - 最好的信息增益
-"""
-def calcInformationGain(dataSet):
-
-    #最优特征的索引值	
-    bestIndex = -1
-    #信息增益
-    bestInfoGain = 0.0  	
-    
-    baseEntropy = calcShannonEnt(dataSet)
-    
-    #特征数量
-    numFeatures = len(dataSet[0]) - 1	
-    #遍历所有特征
-    for i in range(numFeatures): 						
-        #获取dataSet的第i个所有特征
-        featList = [example[i] for example in dataSet]
-        #创建set集合{},元素不可重复
-        uniqueVals = set(featList)     					
-		
-        #经验条件熵
-        newEntropy = 0.0
-        #计算条件熵
-        newEntropy = calcConditionalEntropy(dataSet, i, uniqueVals)
-        #得到增益
-        infoGain = baseEntropy - newEntropy  # 信息增益，就yes熵的减少，也就yes不确定性的减少
-        
-        #最优增益选择
-        if (infoGain > bestInfoGain): 	
-            #更新信息增益，找到最大的信息增益
-            bestInfoGain = infoGain 		
-			
-            #记录信息增益最大的特征的索引值
-            bestIndex = i 
-    
-    return bestIndex, bestInfoGain
+    return retDataSet	
 
 """
 函数说明:统计classList中出现此处最多的元素(类标签)
@@ -157,7 +119,7 @@ def majorityCnt(classList):
         #统计classList中每个元素出现的次数
         if vote not in classCount.keys():
             classCount[vote] = 0	
-            classCount[vote] += 1
+        classCount[vote] += 1
     sortedClassCount = sorted(classCount.items(), key = operator.itemgetter(1), reverse = True)		#根据字典的值降序排序
     
     #返回classList中出现次数最多的元素
@@ -174,7 +136,7 @@ Returns:
 	myTree - 决策树
 
 """
-def createTree(dataSet, labels, featLabels):
+def createTree(dataSet, labels,featLabels):
     
     #取分类标签(是否放贷:yes or no)
     classList = [example[-1] for example in dataSet]			
@@ -187,9 +149,8 @@ def createTree(dataSet, labels, featLabels):
     if len(dataSet[0]) == 1:									
         return majorityCnt(classList)
     
-    bestFeat, bestInfoGain= calcInformationGain(dataSet)	#选择最优特征
+    bestFeat= chooseBestSplit(dataSet)	#选择最优特征
     bestFeatLabel = labels[bestFeat]#最优特征的标签
-    
     featLabels.append(bestFeatLabel)
     myTree = {bestFeatLabel:{}}			#根据最优特征的标签生成树
     del(labels[bestFeat])			#删除已经使用特征标签
@@ -198,9 +159,11 @@ def createTree(dataSet, labels, featLabels):
     featValues = [example[bestFeat] for example in dataSet]		
     
     uniqueVals = set(featValues)		#去掉重复的属性值
-    
-    for value in uniqueVals:	#遍历特征，创建决策树。						
-        myTree[bestFeatLabel][value] = createTree(splitDataSet(dataSet, bestFeat, value), labels, featLabels)
+    #遍历特征，创建决策树。	
+    for value in uniqueVals:	
+        subLabels = labels[:]
+    					
+        myTree[bestFeatLabel][value] = createTree(splitDataSet(dataSet, bestFeat, value), subLabels,featLabels)
 
     return myTree
 
@@ -246,7 +209,7 @@ if __name__ == '__main__':
     print("Step 2: training...")
 
     featLabels = []
-    myTree = createTree(dataSet, labels, featLabels)
+    myTree = createTree(dataSet, labels,featLabels)
     #print(myTree)
     
     ## Step 3: testing
@@ -264,4 +227,3 @@ if __name__ == '__main__':
         print("要购买")
     else:
         print("不购买")
-   

@@ -65,6 +65,7 @@ if __name__ == '__main__':
     # Using decision tree for classification
     # http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html#sklearn.tree.DecisionTreeClassifier
     # clf = tree.DecisionTreeClassifier()
+    ## criterion可选‘gini’, ‘entropy’，默认为gini(对应CART算法)，entropy为信息增益（对应ID3算法）
     clf = tree.DecisionTreeClassifier(criterion='entropy')
     
     ## Step 4: training...

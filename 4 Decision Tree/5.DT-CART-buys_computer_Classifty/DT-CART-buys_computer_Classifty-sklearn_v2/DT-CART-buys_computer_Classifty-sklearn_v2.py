@@ -53,9 +53,10 @@ if __name__ == '__main__':
     ## Step 2: init DT...
     print("Step 2: init DT...")
 
-    ## criterion可选‘gini’, ‘entropy’，默认为gini(对应CART算法)，entropy为信息增益（对应ID3算法）
-    clf = tree.DecisionTreeClassifier(criterion='entropy')
+    # criterion可选‘gini’, ‘entropy’，默认为gini(对应CART算法)，entropy为信息增益（对应ID3算法）    
+    #clf = tree.DecisionTreeClassifier(criterion = 'gini')
     
+    clf = tree.DecisionTreeClassifier()
     ## Step 3: training...
     print("Step 3: training...")
     clf = clf.fit(dataSet, labels)

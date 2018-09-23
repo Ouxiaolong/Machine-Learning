@@ -30,8 +30,9 @@ def test_DT():
     ## Step 3: init NB
     print("Step 3: init NB...")
     #初始化贝叶斯分类器
+    ## criterion可选‘gini’, ‘entropy’，默认为gini(对应CART算法)，entropy为信息增益（对应ID3算法）
     clf = tree.DecisionTreeClassifier(criterion='entropy')
-
+    
     ## Step 4: training...
     print("Step 4: training...")
     #训练数据
