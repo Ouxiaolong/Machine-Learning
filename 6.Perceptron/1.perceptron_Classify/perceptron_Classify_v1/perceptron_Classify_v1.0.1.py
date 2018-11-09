@@ -1,0 +1,112 @@
+"""
+Please note, this code is only for python 3+. If you are using python 2+, please modify the code accordingly.
+"""
+"""
+# @Date     : 2018-11-07
+# @Author   : BruceOu
+# @Language : Python3.6
+"""
+# -*- coding: utf-8 -*-
+import numpy as np
+from matplotlib import pyplot as plt
+import matplotlib
+
+matplotlib.rcParams['font.sans-serif'] = ['SimHei']
+matplotlib.rcParams['font.family'] = 'sans-serif'
+matplotlib.rcParams['axes.unicode_minus'] = False
+
+"""
+函数说明:数据获取
+
+Parameters:
+    无
+Returns:
+    dataMat - data数据集
+    labelMat - 标签数据集
+"""
+def createdata():
+    
+    dataMat=np.array([[3,3],[4,3],[1,1]])
+    labelMat=[1,1,-1]
+    return dataMat,labelMat
+
+#训练感知机模型
+class Perceptron:
+    def __init__(self,x,y,a=1):
+        self.x=x
+        self.y=y
+        self.w=np.zeros((x.shape[1],1))#初始化权重，w1,w2均为0
+        self.b=0
+        self.a=1#学习率
+        self.numsamples=self.x.shape[0]
+        self.numfeatures=self.x.shape[1]
+
+    def sign(self,w,b,x):
+        y=np.dot(x,w)+b
+        return int(y)
+
+    def update(self,label_i,data_i):
+        tmp=label_i*self.a*data_i
+        tmp=tmp.reshape(self.w.shape)
+        #更新w和b
+        self.w=tmp+self.w
+        self.b=self.b+label_i*self.a
+
+    def train(self):
+        isFind=False
+        while not isFind:
+            count=0
+            for i in range(self.numsamples):
+                tmpY=self.sign(self.w,self.b,self.x[i,:])
+                if tmpY*self.y[i]<=0:#如果是一个误分类实例点
+                    print('误分类点为：',self.x[i,:],'此时的w和b为：',self.w,self.b)
+                    count+=1
+                    self.update(self.y[i],self.x[i,:])
+            if count==0:
+                print('最终训练得到的w和b为：',self.w,self.b)
+                isFind=True
+        return self.w,self.b
+
+#画图描绘
+class Picture:
+    def __init__(self,data,w,b):
+        self.b=b
+        self.w=w
+        plt.figure(1)
+        plt.title('Perceptron Learning Algorithm',size=14)
+        plt.xlabel('x0-axis',size=14)
+        plt.ylabel('x1-axis',size=14)
+
+        xData=np.linspace(0,5,100)
+        yData=self.expression(xData)
+        plt.plot(xData,yData,color='r',label='sample data')
+
+        plt.scatter(data[0][0],data[0][1],s=50)
+        plt.scatter(data[1][0],data[1][1],s=50)
+        plt.scatter(data[2][0],data[2][1],s=50,marker='x')
+        plt.savefig('2d.png',dpi=75)
+
+    def expression(self,x):
+        y=(-self.b-self.w[0]*x)/self.w[1]#注意在此，把x0，x1当做两个坐标轴，把x1当做自变量，x2为因变量
+        return y
+
+    def Show(self):
+        plt.show()
+   
+if __name__ == "__main__":
+    ## Step 1: load data...
+    print("Step 1: load data...")
+    samples,labels=createdata()
+
+    ## Step 2: training...
+    myperceptron=Perceptron(x=samples,y=labels)
+    weights,bias=myperceptron.train()
+   
+    ## Step 3: show the result...
+    print("Step 3: show the result...")
+    print("weight,bias:",weights,bias)
+    
+    ## Step 4: show the picture...
+    print("Step 4: show the picture...")
+    Picture=Picture(samples,weights,bias)
+    Picture.Show()
